@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import urllib.request, json,os
+import urllib.request, json, os
 from PIL import Image, ImageFont, ImageDraw
 from subprocess import call
 
@@ -23,9 +23,9 @@ def getBing():
     desc_info = [i for i in total_image_content['hs']]
     sentence2words(desc_info)
     try:
-        urllib.request.urlretrieve(image_info['url'], 'bing.jpg')
+        # urllib.request.urlretrieve(image_info['url'], 'bing.jpg')
         photo_enhance(desc_info)
-        call(['gsettings', 'set', 'org.gnome.desktop.background', 'picture-uri', 'file://%s/bing-out.jpg'%os.getcwd()])
+        # call(['gsettings', 'set', 'org.gnome.desktop.background', 'picture-uri', 'file://%s/bing-out.jpg'%os.getcwd()])
     except Exception as e:
         print(e)
 
@@ -50,7 +50,13 @@ def photo_enhance(desc_info):
     draw = ImageDraw.Draw(txt)
     font = ImageFont.truetype("DejaVuSansMono.ttf", 22, encoding='utf-8')
     for desc in desc_info:
-        draw.text((int(19.20 * desc['locx']), int(10.80 * desc['locy'])), desc['desc'], fill=(255, 255, 255, 150),
+        tempDesc = desc['desc']
+        x, y = (int(19.20 * desc['locx']), int(10.80 * desc['locy']))
+        w, h = font.getsize(str(['s' for i in range(0, 17)]))
+        rectangleOffset=6
+        draw.rectangle((x-rectangleOffset, y-rectangleOffset, x+rectangleOffset + w / 3, y+rectangleOffset + h * 3),
+                       fill=(153,153,102,150))
+        draw.text((x, y), tempDesc, fill=(255, 255, 255, 150),
                   font=font)
     result = Image.alpha_composite(img, txt)
     result.save('bing-out.jpg')
