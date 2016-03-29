@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import urllib.request, json
+import urllib.request, json,os
 from PIL import Image, ImageFont, ImageDraw
 from subprocess import call
 
@@ -11,33 +11,48 @@ def getBing():
         get_json_format_response = urllib.request.urlopen(url).read().decode('utf-8')
     except Exception as e:
         print(e)
-    else:
-        total_image_content = json.loads(get_json_format_response)['images'][0]
-        image_info = {'startdate': total_image_content['startdate'],
-                      'enddate': total_image_content['enddate'],
-                      'url': 'http://global.bing.com%s' % total_image_content['url'],
-                      'copyright': total_image_content['copyright'],
-                      }
-        # for each desc it has 'desc', 'link', 'query', 'locx', 'locy' attributes.
-        desc_info = [i for i in total_image_content['hs']]
-        PhotoEnhance(desc_info)
-        '''try:
-            urllib.request.urlretrieve(image_info['url'],'bing.jpg')
-            call(['gsettings', 'set', 'org.gnome.desktop.background', 'picture-uri', image_info['url']])
-        except Exception as e:
-            print(e)
-        '''
+        return
+    total_image_content = json.loads(get_json_format_response)['images'][0]
+    image_info = {'startdate': total_image_content['startdate'],
+                  'enddate': total_image_content['enddate'],
+                  'url': 'http://global.bing.com%s' % total_image_content['url'],
+                  'copyright': total_image_content['copyright'],
+                  }
+    # for each desc it has 'desc', 'link', 'query', 'locx', 'locy' attributes.
+    desc_info = [i for i in total_image_content['hs']]
+    sentence2words(desc_info)
+    try:
+        urllib.request.urlretrieve(image_info['url'], 'bing.jpg')
+        photo_enhance(desc_info)
+        call(['gsettings', 'set', 'org.gnome.desktop.background', 'picture-uri', 'file://%s/bing-out.jpg'%os.getcwd()])
+    except Exception as e:
+        print(e)
 
 
-def PhotoEnhance(desc_info):
-    img = Image.open('bing.jpg')
-    draw = ImageDraw.Draw(img)
-    font = ImageFont.truetype("DejaVuSansMono.ttf", 20,encoding='utf-8')
-
+def sentence2words(desc_info):
     for desc in desc_info:
-        draw.text((int(19.20 * desc['locx']), int(10.80 * desc['locy'])), '%s' % str(desc['desc']), (119, 119, 60),
+        words = desc['desc'].split()
+        result = ''
+        i = 0
+        for word in words:
+            result = result + word + ' '
+            i += 1
+            if i == 5:
+                result += '\n'
+                i = 0
+        desc['desc'] = result
+
+
+def photo_enhance(desc_info):
+    img = Image.open('bing.jpg').convert('RGBA')
+    txt = Image.new('RGBA', img.size, (255, 255, 255, 0))
+    draw = ImageDraw.Draw(txt)
+    font = ImageFont.truetype("DejaVuSansMono.ttf", 22, encoding='utf-8')
+    for desc in desc_info:
+        draw.text((int(19.20 * desc['locx']), int(10.80 * desc['locy'])), desc['desc'], fill=(255, 255, 255, 150),
                   font=font)
-    img.save('bing-out.jpg')
+    result = Image.alpha_composite(img, txt)
+    result.save('bing-out.jpg')
 
 
 if __name__ == '__main__':
