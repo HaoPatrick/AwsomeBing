@@ -18,6 +18,7 @@ def getBing():
                   'url': 'http://global.bing.com%s' % total_image_content['url'],
                   'copyright': total_image_content['copyright'],
                   }
+
     # for each desc it has 'desc', 'link', 'query', 'locx', 'locy' attributes.
     desc_info = [i for i in total_image_content['hs']]
     sentence2words(desc_info)
