@@ -6,7 +6,7 @@ from subprocess import call
 
 def getBing():
     # use global.bing.com to avoid problems aroused by different locations
-    url = r'http://global.bing.com/HPImageArchive.aspx?format=js&idx=5&n=1&mkt=en-US'
+    url = r'http://global.bing.com/HPImageArchive.aspx?format=js&idx=0&n=1&mkt=en-US'
     try:
         get_json_format_response = urllib.request.urlopen(url).read().decode('utf-8')
     except Exception as e:
