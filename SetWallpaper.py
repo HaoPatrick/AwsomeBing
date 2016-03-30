@@ -1,10 +1,19 @@
 # -*- coding: utf-8 -*-
-import urllib.request, json, os
+import urllib.request, json, os,sys,getopt
 from PIL import Image, ImageFont, ImageDraw
 from subprocess import call
 
+def main(argv):
+    if '-c' in argv:
+        getBing(0)
+    elif '-h' in argv:
+        print('Use -c to remove the description on Wallpaper.\nDesigned by Hao Xiangpeng, all rights reversed.')
+        exit(0)
+        return
+    else:
+        getBing(1)
 
-def getBing():
+def getBing(draw):
     # use global.bing.com to avoid problems aroused by different locations
     url = r'http://global.bing.com/HPImageArchive.aspx?format=js&idx=0&n=1&mkt=en-US'
     try:
@@ -23,9 +32,10 @@ def getBing():
     desc_info = [i for i in total_image_content['hs']]
     sentence2words(desc_info)
     try:
-        #urllib.request.urlretrieve(image_info['url'], 'bing.jpg')
-        photo_enhance(desc_info)
-        #call(['gsettings', 'set', 'org.gnome.desktop.background', 'picture-uri', 'file://%s/bing-out.jpg'%os.getcwd()])
+        urllib.request.urlretrieve(image_info['url'], 'bing.jpg')
+        if draw:
+            photo_enhance(desc_info)
+        call(['gsettings', 'set', 'org.gnome.desktop.background', 'picture-uri', 'file://%s/bing.jpg'%os.getcwd()])
     except Exception as e:
         print(e)
 
@@ -55,7 +65,7 @@ def sentence2words(desc_info):
             line -= 1
         desc['desc'] = result
         # Add the space's space
-        desc['maxLineCount'] = max_line_count+5
+        desc['maxLineCount'] = max_line_count+4
         desc['line'] = line
 
 
@@ -72,7 +82,7 @@ def photo_enhance(desc_info):
         # Too much dark method, as long as some hard code here.
         # w, h = font.getsize(str([' ' for i in range(0, int(desc['maxLineCount']))]))
         #w, h = font.getsize(str(['s' for i in range(0, 50)])[:int(desc['maxLineCount'] * 3.6)])
-        e=font.getsize('ssdfasdf')
+        #e=font.getsize('ssdfasdf')
         w=desc['maxLineCount']*10
         h=font_size
         rectangleoffset = 6
@@ -83,8 +93,8 @@ def photo_enhance(desc_info):
         draw.text((x, y), tempDesc, fill=(255, 255, 255, 100),
                   font=font)
     result = Image.alpha_composite(img, txt)
-    result.save('bing-out.jpg')
+    result.save('bing.jpg')
 
 
 if __name__ == '__main__':
-    getBing()
+    main(sys.argv[1:])
