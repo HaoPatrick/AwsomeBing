@@ -23,9 +23,9 @@ def getBing():
     desc_info = [i for i in total_image_content['hs']]
     sentence2words(desc_info)
     try:
-        urllib.request.urlretrieve(image_info['url'], 'bing.jpg')
+        #urllib.request.urlretrieve(image_info['url'], 'bing.jpg')
         photo_enhance(desc_info)
-        call(['gsettings', 'set', 'org.gnome.desktop.background', 'picture-uri', 'file://%s/bing-out.jpg'%os.getcwd()])
+        #call(['gsettings', 'set', 'org.gnome.desktop.background', 'picture-uri', 'file://%s/bing-out.jpg'%os.getcwd()])
     except Exception as e:
         print(e)
 
@@ -54,7 +54,8 @@ def sentence2words(desc_info):
             result = result[:-1]
             line -= 1
         desc['desc'] = result
-        desc['maxLineCount'] = max_line_count
+        # Add the space's space
+        desc['maxLineCount'] = max_line_count+5
         desc['line'] = line
 
 
@@ -62,18 +63,22 @@ def photo_enhance(desc_info):
     img = Image.open('bing.jpg').convert('RGBA')
     txt = Image.new('RGBA', img.size, (255, 255, 255, 0))
     draw = ImageDraw.Draw(txt)
-    font = ImageFont.truetype("DejaVuSansMono.ttf", 16, encoding='utf-8')
+    font_size=16
+    font = ImageFont.truetype("DejaVuSansMono.ttf", font_size, encoding='utf-8')
     for desc in desc_info:
         tempDesc = desc['desc']
         x, y = (int(19.20 * desc['locx']), int(10.80 * desc['locy']))
 
         # Too much dark method, as long as some hard code here.
         # w, h = font.getsize(str([' ' for i in range(0, int(desc['maxLineCount']))]))
-        w, h = font.getsize(str(['s' for i in range(0, 50)])[:int(desc['maxLineCount'] * 3.6)])
+        #w, h = font.getsize(str(['s' for i in range(0, 50)])[:int(desc['maxLineCount'] * 3.6)])
+        e=font.getsize('ssdfasdf')
+        w=desc['maxLineCount']*10
+        h=font_size
         rectangleoffset = 6
         draw.rectangle(
-            (x - rectangleoffset, y - rectangleoffset, x + rectangleoffset + w / 3,
-             y + rectangleoffset + h * desc['line']),
+            (x - rectangleoffset, y - rectangleoffset, x + rectangleoffset + w,
+             y + rectangleoffset*2 + h * desc['line']),
             fill=(30, 30, 21, 130))
         draw.text((x, y), tempDesc, fill=(255, 255, 255, 100),
                   font=font)
